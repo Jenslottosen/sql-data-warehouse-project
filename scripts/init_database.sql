@@ -1,0 +1,109 @@
+/*-------------------------------------------------------------
+Create database & schemas
+-------------------------------------------------------------*/
+USE master;
+GO
+
+IF DB_ID('DataWarehouse') IS NULL
+    CREATE DATABASE DataWarehouse;
+GO
+
+USE DataWarehouse;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'bronze')
+    EXEC('CREATE SCHEMA bronze');
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'silver')
+    EXEC('CREATE SCHEMA silver');
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'gold')
+    EXEC('CREATE SCHEMA gold');
+GO
+
+/*-------------------------------------------------------------
+Create bronze tables
+-------------------------------------------------------------*/
+
+IF OBJECT_ID ('bronze.crm_cust_info', 'U') IS NOT NULL
+	DROP TABLE bronze.crm_cust_info;
+CREATE TABLE bronze.crm_cust_info (
+    cst_id            INT,
+    cst_key           NVARCHAR(50),
+    cst_firstname     NVARCHAR(50),
+    cst_lastname      NVARCHAR(50),
+    cst_material_status NVARCHAR(50),
+    cst_gender        NVARCHAR(50),
+    cts_create_date   DATE
+);
+GO
+
+
+IF OBJECT_ID ('bronze.crm_pro_info', 'U') IS NOT NULL
+	DROP TABLE bronze.crm_pro_info;
+CREATE TABLE bronze.crm_pro_info (
+    prod_id       INT,
+    prod_key      NVARCHAR(50),
+    prod_nm       NVARCHAR(50),
+    prod_cost     INT,
+    prod_line     NVARCHAR(50),
+    prod_start_dt DATETIME,
+    prod_end_dt   DATETIME
+);
+GO
+
+
+IF OBJECT_ID ('bronze.crm_sales_details', 'U') IS NOT NULL
+	DROP TABLE bronze.crm_sales_details;
+CREATE TABLE bronze.crm_sales_details (
+    sls_ord_num  NVARCHAR(50),
+    sls_prd_key  NVARCHAR(50),
+    sls_cust_id  INT,
+    sls_order_dt INT,
+    sls_ship_dt  INT,
+    sls_due_dt   INT,
+    sls_sales    INT,
+    sls_quantity INT,
+    sls_price    INT
+);
+GO
+
+IF OBJECT_ID ('bronze.erp_loc_a101', 'U') IS NOT NULL
+	DROP TABLE bronze.erp_loc_a101;
+CREATE TABLE bronze.erp_loc_a101 (
+    cid   NVARCHAR(50),
+    cntry NVARCHAR(50)
+);
+GO
+
+IF OBJECT_ID ('bronze.erp_cust_az12', 'U') IS NOT NULL
+	DROP TABLE bronze.erp_cust_az12;
+CREATE TABLE bronze.erp_cust_az12 (
+    cid   NVARCHAR(50),
+    cntry NVARCHAR(50)
+);
+GO
+
+IF OBJECT_ID ('bronze.erp_px_cat_g1v2', 'U') IS NOT NULL
+	DROP TABLE bronze.erp_px_cat_g1v2;
+CREATE TABLE bronze.erp_px_cat_g1v2 (
+    id          NVARCHAR(50),
+    cat         NVARCHAR(50),
+    subcat      NVARCHAR(50),
+    maintenance NVARCHAR(50)
+);
+GO
+
+/*-------------------------------------------------------------
+Verify
+-------------------------------------------------------------*/
+SELECT DB_NAME() AS current_db;
+GO
+
+SELECT s.name AS schema_name,
+       t.name AS table_name
+FROM   sys.tables t
+JOIN   sys.schemas s ON s.schema_id = t.schema_id
+WHERE  s.name = 'bronze'
+ORDER BY t.name;
+GO
